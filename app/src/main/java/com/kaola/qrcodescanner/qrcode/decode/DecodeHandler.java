@@ -20,14 +20,21 @@ import android.os.Message;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.BinaryBitmap;
 import com.google.zxing.DecodeHintType;
+import com.google.zxing.NotFoundException;
 import com.google.zxing.PlanarYUVLuminanceSource;
+import com.google.zxing.Reader;
 import com.google.zxing.ReaderException;
 import com.google.zxing.Result;
 import com.google.zxing.common.HybridBinarizer;
+import com.google.zxing.oned.Code128Reader;
+import com.google.zxing.oned.Code39Reader;
+import com.google.zxing.oned.Code93Reader;
+import com.google.zxing.oned.MultiFormatUPCEANReader;
 import com.google.zxing.qrcode.QRCodeReader;
 import com.kaola.qrcodescanner.R;
 import com.kaola.qrcodescanner.qrcode.QrCodeActivity;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.Map;
@@ -35,17 +42,33 @@ import java.util.Map;
 final class DecodeHandler extends Handler {
 
     private final QrCodeActivity mActivity;
-    private final QRCodeReader mQrCodeReader;
     private final Map<DecodeHintType, Object> mHints;
     private byte[] mRotatedData;
+    private final ArrayList<Reader> mReaders = new ArrayList<>(2);
 
     DecodeHandler(QrCodeActivity activity) {
-        this.mActivity = activity;
-        mQrCodeReader = new QRCodeReader();
+        mActivity = activity;
+
+        ArrayList<BarcodeFormat> barcodeFormats = new ArrayList<>(4);
+        barcodeFormats.add(BarcodeFormat.EAN_8);
+        barcodeFormats.add(BarcodeFormat.EAN_13);
+        barcodeFormats.add(BarcodeFormat.UPC_A);
+        barcodeFormats.add(BarcodeFormat.UPC_E);
+
         mHints = new Hashtable<>();
         mHints.put(DecodeHintType.CHARACTER_SET, "utf-8");
         mHints.put(DecodeHintType.TRY_HARDER, Boolean.TRUE);
-        mHints.put(DecodeHintType.POSSIBLE_FORMATS, BarcodeFormat.QR_CODE);
+        mHints.put(DecodeHintType.POSSIBLE_FORMATS, barcodeFormats);
+
+        MultiFormatUPCEANReader multiFormatUPCEANReader = new MultiFormatUPCEANReader(mHints);
+        QRCodeReader qrCodeReader = new QRCodeReader();
+
+
+        mReaders.add(multiFormatUPCEANReader);
+        mReaders.add(qrCodeReader);
+        mReaders.add(new Code39Reader());
+        mReaders.add(new Code93Reader());
+        mReaders.add(new Code128Reader());
     }
 
     @Override
@@ -91,16 +114,15 @@ final class DecodeHandler extends Handler {
         int tmp = width; // Here we are swapping, that's the difference to #11
         width = height;
         height = tmp;
-
         Result rawResult = null;
         try {
             PlanarYUVLuminanceSource source =
                 new PlanarYUVLuminanceSource(mRotatedData, width, height, 0, 0, width, height, false);
-            BinaryBitmap bitmap1 = new BinaryBitmap(new HybridBinarizer(source));
-            rawResult = mQrCodeReader.decode(bitmap1, mHints);
+            BinaryBitmap image = new BinaryBitmap(new HybridBinarizer(source));
+            rawResult = decodeInternal(image);
         } catch (ReaderException e) {
         } finally {
-            mQrCodeReader.reset();
+            reset();
         }
 
         if (rawResult != null) {
@@ -109,6 +131,27 @@ final class DecodeHandler extends Handler {
         } else {
             Message message = Message.obtain(mActivity.getCaptureActivityHandler(), R.id.decode_failed);
             message.sendToTarget();
+        }
+    }
+
+    private Result decodeInternal(BinaryBitmap image) throws NotFoundException {
+        if (mReaders != null) {
+            for (Reader reader : mReaders) {
+                try {
+                    return reader.decode(image, mHints);
+                } catch (ReaderException re) {
+                    // continue
+                }
+            }
+        }
+        throw NotFoundException.getNotFoundInstance();
+    }
+
+    private void reset() {
+        if (mReaders != null) {
+            for (Reader reader : mReaders) {
+                reader.reset();
+            }
         }
     }
 }
