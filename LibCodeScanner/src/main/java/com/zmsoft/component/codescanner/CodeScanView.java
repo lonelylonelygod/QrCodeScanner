@@ -163,6 +163,18 @@ public class CodeScanView extends RelativeLayout implements SurfaceHolder.Callba
     }
 
     /**
+     * 暂停识别内容, 并在一定时间后自动重新开始识别
+     *
+     *  @param delay 暂停的时间 单位是毫秒
+     */
+    public void pauseScan(long delay){
+        if (mCaptureActivityHandler != null) {
+            mCaptureActivityHandler.pauseDecode(delay);
+        }
+    }
+
+
+    /**
      * 重行开始识别内容
      */
     public void restartScan(){

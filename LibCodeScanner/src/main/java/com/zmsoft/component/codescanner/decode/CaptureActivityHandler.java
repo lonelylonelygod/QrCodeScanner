@@ -24,6 +24,8 @@ import com.zmsoft.component.codescanner.camera.CameraManager;
  * This class handles all the messaging which comprises the state machine for capture.
  */
 public final class CaptureActivityHandler extends Handler {
+
+    private final static int WHAT_RESTART_DECODE = 0;
     private final DecodeThread mDecodeThread;
     private DecodeHandlerDelegate mDecodeHandlerDelegate;
     private State mState;
@@ -58,6 +60,8 @@ public final class CaptureActivityHandler extends Handler {
             mState = State.PREVIEW;
             CameraManager.get().requestPreviewFrame(mDecodeThread.getHandler(), R.id.decode);
 
+        } else if (message.what == R.id.decode_restart){
+            restartPreviewAndDecode();
         }
     }
 
@@ -79,6 +83,11 @@ public final class CaptureActivityHandler extends Handler {
 
     public void pauseDecode(){
         ((DecodeHandler)mDecodeThread.getHandler()).setSpotEnable(false);
+    }
+
+    public void pauseDecode(long delay){
+        ((DecodeHandler)mDecodeThread.getHandler()).setSpotEnable(false);
+        sendEmptyMessageDelayed(R.id.decode_restart, delay);
     }
 
     public void restartPreviewAndDecode() {

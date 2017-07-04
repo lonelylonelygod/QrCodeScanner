@@ -36,8 +36,8 @@ uploadArchives {
         }
         pom.project {
             groupId CONFIG_GROUP_ID
-            artifactId TINKER_SERVER_ARTIFACT_ID
-            version TINKER_SERVER_VERSION_NAME
+            artifactId ARTIFACT_ID
+            version LIB_VERSION_NAME
         }
     }
 }

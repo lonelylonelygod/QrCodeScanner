@@ -30,6 +30,6 @@ dependencies {
     compile 'com.android.support:design:25.3.1'
     compile 'pub.devrel:easypermissions:0.1.7'
     testCompile 'junit:junit:4.12'
-//    compile project(path: ':qrLib')
-    compile 'com.zmsoft.component.codescanner:codescanner:0.5.1'
+    compile project(path: ':LibCodeScanner')
+//    compile 'com.zmsoft.component.codescanner:codescanner:0.5.1'
 }
