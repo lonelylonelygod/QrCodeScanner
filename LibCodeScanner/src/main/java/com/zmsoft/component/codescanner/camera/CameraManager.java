@@ -19,6 +19,7 @@ import android.os.Handler;
 import android.view.SurfaceHolder;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -180,7 +181,14 @@ public final class CameraManager {
      * @param handler The handler to send the message to.
      * @param message The what field of the message to be sent.
      */
-    public void requestPreviewFrame(Handler handler, int message) {
+//    public void requestPreviewFrame(Handler handler, int message) {
+//        if (mCamera != null && mPreviewing) {
+//            mPreviewCallback.setHandler(handler, message);
+//            mCamera.setOneShotPreviewCallback(mPreviewCallback);
+//        }
+//    }
+
+    public void requestPreviewFrame(ArrayList<Handler> handler, int message) {
         if (mCamera != null && mPreviewing) {
             mPreviewCallback.setHandler(handler, message);
             mCamera.setOneShotPreviewCallback(mPreviewCallback);

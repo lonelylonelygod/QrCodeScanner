@@ -24,12 +24,22 @@ import java.util.concurrent.CountDownLatch;
  */
 final class DecodeThread extends Thread {
 
+    public final static int DECODE_THREAD_TYPE_DEFAULT = 0;
+    public final static int DECODE_THREAD_TYPE_OPENCV = 1;
+
     private final DecodeHandlerDelegate mDecodeHandlerDelegate;
     private Handler mHandler;
     private final CountDownLatch mHandlerInitLatch;
+    private int mType;
 
-    DecodeThread(DecodeHandlerDelegate decodeHandlerDelegate) {
+    DecodeThread(DecodeHandlerDelegate decodeHandlerDelegate){
+        this(decodeHandlerDelegate, DECODE_THREAD_TYPE_DEFAULT);
+    }
+
+
+    DecodeThread(DecodeHandlerDelegate decodeHandlerDelegate, int type) {
         mDecodeHandlerDelegate = decodeHandlerDelegate;
+        mType = type;
         mHandlerInitLatch = new CountDownLatch(1);
     }
 
@@ -45,7 +55,7 @@ final class DecodeThread extends Thread {
     @Override
     public void run() {
         Looper.prepare();
-        mHandler = new DecodeHandler(mDecodeHandlerDelegate);
+        mHandler = new DecodeHandler(mDecodeHandlerDelegate, mType);
         mHandlerInitLatch.countDown();
         Looper.loop();
     }
