@@ -15,7 +15,6 @@ package com.zmsoft.component.codescanner.decode;
 
 import android.os.Handler;
 import android.os.Message;
-import android.support.v4.util.LruCache;
 import android.util.Log;
 
 import com.google.zxing.Result;
@@ -34,7 +33,7 @@ public final class CaptureActivityHandler extends Handler {
 
     private DecodeHandlerDelegate mDecodeHandlerDelegate;
     private State mState;
-    private LruCache<byte[], String> mResultCache = new LruCache<>(10);
+//    private LruCache<byte[], String> mResultCache = new LruCache<>(10);
 
     public CaptureActivityHandler(DecodeHandlerDelegate decodeHandlerDelegate) {
         mDecodeHandlerDelegate = decodeHandlerDelegate;
@@ -61,16 +60,16 @@ public final class CaptureActivityHandler extends Handler {
             mState = State.SUCCESS;
             Result result = (Result) message.obj;
             Log.d("CaptureHandleMessage", "decode_succeeded");
-            if (result.getRawBytes() != null && mResultCache.get(result.getRawBytes()) == null) {
-                Log.d("CaptureHandleMessage", "result.getRawBytes() value: " + mResultCache.get(result.getRawBytes()));
-                mResultCache.put(result.getRawBytes(), result.getText());
+//            if (result.getRawBytes() != null && mResultCache.get(result.getRawBytes()) == null) {
+//                Log.d("CaptureHandleMessage", "result.getRawBytes() value: " + mResultCache.get(result.getRawBytes()));
+//                mResultCache.put(result.getRawBytes(), result.getText());
                 mDecodeHandlerDelegate.handleDecode(result);
-            } else if(result.getRawBytes() != null && mResultCache.get(result.getRawBytes()) != null){
-                Log.d("CaptureHandleMessage", "Cache on handle!!!!!!");
-                restartPreviewAndDecode();
-            } else {
-                restartPreviewAndDecode();
-            }
+//            } else if(result.getRawBytes() != null && mResultCache.get(result.getRawBytes()) != null){
+//                Log.d("CaptureHandleMessage", "Cache on handle!!!!!!");
+//                restartPreviewAndDecode();
+//            } else {
+//                restartPreviewAndDecode();
+//            }
         } else if (message.what == R.id.decode_failed) {// We're decoding as fast as possible, so when one decode fails, start another.
             Log.d("CaptureHandleMessage", "decode_failed");
             mState = State.PREVIEW;

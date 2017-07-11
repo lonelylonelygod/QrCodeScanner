@@ -148,8 +148,8 @@ final class DecodeHandler extends Handler {
             Log.d("Decode Benchmark",  "decode spent "+ duration + " ms");
             sendSucceedMessage(rawResult);
         } else {
-            decodeWithOpenCV(data, width, height);
-//            sendFailedMessage();
+//            decodeWithOpenCV(data, width, height);
+            sendFailedMessage();
         }
     }
 
