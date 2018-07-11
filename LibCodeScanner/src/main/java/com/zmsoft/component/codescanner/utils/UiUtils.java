@@ -82,7 +82,6 @@ public class UiUtils {
      * @return
      */
     public static int getScreenWidth(Context context) {
-
         DisplayMetrics dm = context.getResources().getDisplayMetrics();
         return dm.widthPixels;
     }
@@ -94,7 +93,6 @@ public class UiUtils {
      */
     public static int getScreenHeight(Context context) {
         DisplayMetrics dm = context.getResources().getDisplayMetrics();
-        int screenHeight = dm.heightPixels;
-        return screenHeight;
+        return dm.heightPixels;
     }
 }

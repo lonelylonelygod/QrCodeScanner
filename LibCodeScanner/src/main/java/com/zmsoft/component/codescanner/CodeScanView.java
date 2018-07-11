@@ -40,7 +40,6 @@ public class CodeScanView extends RelativeLayout implements SurfaceHolder.Callba
         mSurfaceView = new SurfaceView(getContext());
         mSurfaceView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT));
-
         mSurfaceView.setId(R.id.bgaqrcode_camera_preview);
         addView(mSurfaceView);
 

@@ -18,8 +18,6 @@ import android.graphics.Point;
 import android.hardware.Camera;
 import android.util.Log;
 
-import com.zmsoft.component.codescanner.utils.UiUtils;
-
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -34,10 +32,12 @@ final class CameraConfigurationManager {
 
     private Camera.Size mCameraResolution;
     private Camera.Size mPictureResolution;
-    private Context mContext;
+    private int mScreenH;
+    private int mScreenW;
 
     CameraConfigurationManager(Context context) {
-        this.mContext = context;
+        mScreenW = context.getResources().getDisplayMetrics().widthPixels;
+        mScreenH = context.getResources().getDisplayMetrics().heightPixels;
     }
 
     /**
@@ -45,11 +45,10 @@ final class CameraConfigurationManager {
      */
     void initFromCameraParameters(Camera camera) {
         Camera.Parameters parameters = camera.getParameters();
-        mCameraResolution = findCloselySize(UiUtils.getScreenWidth(mContext), UiUtils.getScreenHeight(mContext),
+        mCameraResolution = findCloselySize(mScreenW, mScreenH,
             parameters.getSupportedPreviewSizes());
         Log.e(TAG, "Setting preview size: " + mCameraResolution.width + "-" + mCameraResolution.height);
-        mPictureResolution = findCloselySize(UiUtils.getScreenWidth(mContext),
-                UiUtils.getScreenHeight(mContext), parameters.getSupportedPictureSizes());
+        mPictureResolution = findCloselySize(mScreenW, mScreenH, parameters.getSupportedPictureSizes());
         Log.e(TAG, "Setting picture size: " + mPictureResolution.width + "-" + mPictureResolution.height);
     }
 
@@ -64,6 +63,7 @@ final class CameraConfigurationManager {
         Camera.Parameters parameters = camera.getParameters();
         parameters.setPreviewSize(mCameraResolution.width, mCameraResolution.height);
         parameters.setPictureSize(mPictureResolution.width, mPictureResolution.height);
+        parameters.set("orientation", "portrait");
         setZoom(parameters);
         camera.setDisplayOrientation(90);
         camera.setParameters(parameters);
