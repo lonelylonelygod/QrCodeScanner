@@ -17,7 +17,7 @@ maven {
 }
 
 dependencies {
-    compile 'com.zmsoft.component.codescanner:codescanner:0.5.4'
+    compile 'com.zmsoft.component.codescanner:codescanner:0.5.5'
 }
 ```
 ## 布局文件
