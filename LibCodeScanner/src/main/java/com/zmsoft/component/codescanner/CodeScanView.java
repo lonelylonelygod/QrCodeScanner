@@ -17,7 +17,7 @@ import com.zmsoft.component.codescanner.decode.DecodeHandlerDelegate;
 
 import java.io.IOException;
 
-public class CodeScanView extends RelativeLayout implements SurfaceHolder.Callback{
+public class CodeScanView extends RelativeLayout implements SurfaceHolder.Callback {
     protected SurfaceView mSurfaceView;
     protected ScanBoxView mScanBoxView;
     protected ScanResultCallback mScanResultCallback;
@@ -101,7 +101,7 @@ public class CodeScanView extends RelativeLayout implements SurfaceHolder.Callba
         }
     }
 
-    public void onViewResumed(){
+    public void onViewResumed() {
         SurfaceHolder surfaceHolder = mSurfaceView.getHolder();
         if (mHasSurface) {
             initCamera(surfaceHolder);
@@ -155,7 +155,7 @@ public class CodeScanView extends RelativeLayout implements SurfaceHolder.Callba
     /**
      * 暂停识别内容
      */
-    public void pauseScan(){
+    public void pauseScan() {
         if (mCaptureActivityHandler != null) {
             mCaptureActivityHandler.pauseDecode();
         }
@@ -164,9 +164,9 @@ public class CodeScanView extends RelativeLayout implements SurfaceHolder.Callba
     /**
      * 暂停识别内容, 并在一定时间后自动重新开始识别
      *
-     *  @param delay 暂停的时间 单位是毫秒
+     * @param delay 暂停的时间 单位是毫秒
      */
-    public void pauseScan(long delay){
+    public void pauseScan(long delay) {
         if (mCaptureActivityHandler != null) {
             mCaptureActivityHandler.pauseDecode(delay);
         }
@@ -176,7 +176,7 @@ public class CodeScanView extends RelativeLayout implements SurfaceHolder.Callba
     /**
      * 重行开始识别内容
      */
-    public void restartScan(){
+    public void restartScan() {
         if (null != mCaptureActivityHandler) {
             mCaptureActivityHandler.restartPreviewAndDecode();
         }
@@ -185,15 +185,15 @@ public class CodeScanView extends RelativeLayout implements SurfaceHolder.Callba
     /**
      * 打开闪光灯
      */
-    public void openFlashlight() {
-        CameraManager.get().setFlashLight(true);
+    public boolean openFlashlight() {
+        return CameraManager.get().setFlashLight(true);
     }
 
     /**
      * 关闭散光灯
      */
-    public void closeFlashlight() {
-        CameraManager.get().setFlashLight(false);
+    public boolean closeFlashlight() {
+        return CameraManager.get().setFlashLight(false);
     }
 
     /**
@@ -232,7 +232,7 @@ public class CodeScanView extends RelativeLayout implements SurfaceHolder.Callba
         return mScanBoxView.getIsBarcode();
     }
 
-    private class MyDecodeDelegate extends DecodeHandlerDelegate{
+    private class MyDecodeDelegate extends DecodeHandlerDelegate {
 
         @Override
         protected Context getDelegateContext() {
