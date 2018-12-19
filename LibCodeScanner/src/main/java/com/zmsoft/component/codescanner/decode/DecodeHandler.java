@@ -34,10 +34,7 @@ import com.google.zxing.oned.MultiFormatUPCEANReader;
 import com.google.zxing.qrcode.QRCodeReader;
 import com.zmsoft.component.codescanner.R;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Hashtable;
-import java.util.Map;
+import java.util.*;
 
 final class DecodeHandler extends Handler {
 
@@ -56,7 +53,7 @@ final class DecodeHandler extends Handler {
         barcodeFormats.add(BarcodeFormat.UPC_A);
         barcodeFormats.add(BarcodeFormat.UPC_E);
 
-        mHints = new Hashtable<>();
+        mHints = new HashMap<>();
         mHints.put(DecodeHintType.CHARACTER_SET, "utf-8");
         mHints.put(DecodeHintType.TRY_HARDER, Boolean.TRUE);
         mHints.put(DecodeHintType.POSSIBLE_FORMATS, barcodeFormats);

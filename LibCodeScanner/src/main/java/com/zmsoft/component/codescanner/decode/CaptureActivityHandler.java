@@ -92,6 +92,10 @@ public final class CaptureActivityHandler extends Handler {
 
     public void restartPreviewAndDecode() {
         ((DecodeHandler)mDecodeThread.getHandler()).setSpotEnable(true);
+        startInternal();
+    }
+
+    private void startInternal() {
         if (mState != State.PREVIEW) {
             CameraManager.get().startPreview();
             mState = State.PREVIEW;
@@ -99,5 +103,4 @@ public final class CaptureActivityHandler extends Handler {
             CameraManager.get().requestAutoFocus(this, R.id.auto_focus);
         }
     }
-
 }
