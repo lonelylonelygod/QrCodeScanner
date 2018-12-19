@@ -99,7 +99,7 @@ public class TestScanActivity extends AppCompatActivity implements CodeScanView.
                 mCodeScanView.restartScan();
                 break;
             case R.id.stop_spot:
-                mCodeScanView.pauseScan(2000);
+                mCodeScanView.pauseScan();
                 break;
             case R.id.show_rect:
                 mCodeScanView.showScanRect();

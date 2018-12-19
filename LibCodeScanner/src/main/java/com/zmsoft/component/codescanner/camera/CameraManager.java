@@ -188,7 +188,7 @@ public final class CameraManager {
 //        }
 //    }
 
-    public void requestPreviewFrame(ArrayList<Handler> handler, int message) {
+    public void requestPreviewFrame(Handler handler, int message) {
         if (mCamera != null && mPreviewing) {
             mPreviewCallback.setHandler(handler, message);
             mCamera.setOneShotPreviewCallback(mPreviewCallback);
