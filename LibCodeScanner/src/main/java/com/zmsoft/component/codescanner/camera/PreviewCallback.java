@@ -17,6 +17,7 @@ import android.hardware.Camera;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+import com.zmsoft.component.codescanner.R;
 
 final class PreviewCallback implements Camera.PreviewCallback {
     private static final String TAG = PreviewCallback.class.getName();
@@ -41,10 +42,12 @@ final class PreviewCallback implements Camera.PreviewCallback {
                 mPreviewHandler.obtainMessage(mPreviewMessage, cameraResolution.width, cameraResolution.height, data);
             //actually send to DecodeHandler
             message.sendToTarget();
+            Message restartMessage =
+                    mPreviewHandler.obtainMessage(R.id.decode_restart, cameraResolution.width, cameraResolution.height, data);
+            restartMessage.sendToTarget();
             mPreviewHandler = null;
         } else {
             Log.v(TAG, "no handler callback.");
         }
     }
-
 }

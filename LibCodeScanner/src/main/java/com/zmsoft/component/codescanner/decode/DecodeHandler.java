@@ -1,11 +1,11 @@
 /*
  * Copyright (C) 2010 ZXing authors
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
@@ -18,14 +18,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
 
-import com.google.zxing.BarcodeFormat;
-import com.google.zxing.BinaryBitmap;
-import com.google.zxing.DecodeHintType;
-import com.google.zxing.NotFoundException;
-import com.google.zxing.PlanarYUVLuminanceSource;
-import com.google.zxing.Reader;
-import com.google.zxing.ReaderException;
-import com.google.zxing.Result;
+import com.google.zxing.*;
 import com.google.zxing.common.HybridBinarizer;
 import com.google.zxing.oned.Code128Reader;
 import com.google.zxing.oned.Code39Reader;
@@ -35,6 +28,10 @@ import com.google.zxing.qrcode.QRCodeReader;
 import com.zmsoft.component.codescanner.R;
 
 import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 final class DecodeHandler extends Handler {
 
@@ -61,9 +58,8 @@ final class DecodeHandler extends Handler {
         MultiFormatUPCEANReader multiFormatUPCEANReader = new MultiFormatUPCEANReader(mHints);
         QRCodeReader qrCodeReader = new QRCodeReader();
 
-
-        mReaders.add(multiFormatUPCEANReader);
         mReaders.add(qrCodeReader);
+        mReaders.add(multiFormatUPCEANReader);
         mReaders.add(new Code39Reader());
         mReaders.add(new Code93Reader());
         mReaders.add(new Code128Reader());
@@ -72,9 +68,15 @@ final class DecodeHandler extends Handler {
     @Override
     public void handleMessage(Message message) {
         if (message.what == R.id.decode) {
-            Log.d("DecodeHandler ", "mSpotEnable: " + mSpotEnable);
             if (mSpotEnable) {
-                decode((byte[]) message.obj, message.arg1, message.arg2);
+//                decode(message);
+                try {
+                    es.submit(new DecodeTask((byte[]) message.obj, message.arg1, message.arg2, true));
+                    es.submit(new DecodeTask((byte[]) message.obj, message.arg1, message.arg2, false));
+                    es.submit(new DecodeTask((byte[]) message.obj, message.arg1, message.arg2, false));
+                } catch (Exception e) {
+                    sendFailedMessage();
+                }
             } else {
                 sendFailedMessage();
             }
@@ -83,8 +85,11 @@ final class DecodeHandler extends Handler {
             if (null != looper) {
                 looper.quit();
             }
+        } else if (message.what == R.id.decode_restart) {
+            sendFailedMessage();
         }
     }
+
 
     /**
      * Decode the data within the viewfinder rectangle, and time how long it took. For efficiency, reuse the same reader
@@ -94,7 +99,7 @@ final class DecodeHandler extends Handler {
      * @param width  The width of the preview frame.
      * @param height The height of the preview frame.
      */
-    private void decode(byte[] data, int width, int height) {
+    private Result decode(byte[] data, int width, int height, boolean qrcode) {
         if (null == mRotatedData) {
             mRotatedData = new byte[width * height];
         } else {
@@ -102,7 +107,9 @@ final class DecodeHandler extends Handler {
                 mRotatedData = new byte[width * height];
             }
         }
+
         Arrays.fill(mRotatedData, (byte) 0);
+
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 if (x + y * width >= data.length) {
@@ -115,21 +122,26 @@ final class DecodeHandler extends Handler {
         width = height;
         height = tmp;
         Result rawResult = null;
+        Log.d("DecodeHandler Decode", "try decodeInternal");
+
         try {
             PlanarYUVLuminanceSource source =
                     new PlanarYUVLuminanceSource(mRotatedData, width, height, 0, 0, width, height, false);
             BinaryBitmap image = new BinaryBitmap(new HybridBinarizer(source));
-            rawResult = decodeInternal(image);
+            rawResult = decodeInternal(image, qrcode);
         } catch (ReaderException e) {
         } finally {
             reset();
         }
 
         if (rawResult != null) {
+            Log.d("DecodeHandler rawResult", rawResult.getText());
             sendSucceedMessage(rawResult);
+            return rawResult;
         } else {
             sendFailedMessage();
         }
+        return null;
     }
 
     private void sendSucceedMessage(Result rawResult) {
@@ -137,13 +149,23 @@ final class DecodeHandler extends Handler {
         message.sendToTarget();
     }
 
-    private void sendFailedMessage(){
+    private void sendFailedMessage() {
         Message message = Message.obtain(mDecodeHandlerDelegate.getCaptureActivityHandler(), R.id.decode_failed);
         message.sendToTarget();
     }
 
-    private Result decodeInternal(BinaryBitmap image) throws NotFoundException {
+    private Result decodeInternal(BinaryBitmap image, boolean qrcode) throws NotFoundException {
+        if (qrcode) {
+            try {
+                return mReaders.get(0).decode(image, mHints);
+            } catch (ChecksumException e) {
+                e.printStackTrace();
+            } catch (FormatException e) {
+                e.printStackTrace();
+            }
+        }
         for (Reader reader : mReaders) {
+            if (reader instanceof QRCodeReader) continue;
             try {
                 return reader.decode(image, mHints);
             } catch (ReaderException re) {
@@ -159,11 +181,34 @@ final class DecodeHandler extends Handler {
         }
     }
 
-    void setSpotEnable(boolean spotEnable){
+    void setSpotEnable(boolean spotEnable) {
         mSpotEnable = spotEnable;
     }
 
-    public boolean getSpotEnable(){
+    public boolean getSpotEnable() {
         return mSpotEnable;
     }
+
+    private static ExecutorService es = Executors.newFixedThreadPool(10);
+
+    class DecodeTask implements Callable<Result> {
+
+        byte[] data;
+        int width;
+        int height;
+        boolean qrcode;
+
+        private DecodeTask(byte[] data, int width, int height, boolean qrcode) {
+            this.data = data;
+            this.width = width;
+            this.height = height;
+            this.qrcode = qrcode;
+        }
+
+        @Override
+        public Result call() throws Exception {
+            return decode(data, width, height, qrcode);
+        }
+    }
+
 }
