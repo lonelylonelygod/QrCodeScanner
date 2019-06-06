@@ -1,9 +1,12 @@
 buildscript {
     repositories {
-        maven { url 'http://10.1.64.115:8081/repository/maven-public/' }
-        dependencies {
-            classpath 'com.android.tools.build:gradle:3.2.1'
-        }
+        maven{ url 'http://maven.aliyun.com/nexus/content/repositories/google'}
+        maven{ url 'http://maven.aliyun.com/nexus/content/repositories/jcenter'}
+        google()
+
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:3.4.1'
     }
 }
 
@@ -16,7 +19,9 @@ def mavenPassword = properties.getProperty('maven.password')
 
 allprojects {
     repositories {
-        maven { url 'http://10.1.64.115:8081/repository/maven-public/' }
+        maven{ url 'http://maven.aliyun.com/nexus/content/repositories/google'}
+        maven{ url 'http://maven.aliyun.com/nexus/content/repositories/jcenter'}
+
     }
 }
 
